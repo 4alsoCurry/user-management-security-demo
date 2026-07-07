@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理系统 - 安全版</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="brand">用户管理系统</a>
+        </div>
+        <div class="nav-right">
+            {% if session.get("username") %}
+                <span class="nav-welcome">欢迎，{{ session["username"] }}</span>
+                <a href="{{ url_for('logout') }}" class="nav-link">退出</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link">登录</a>
+                <a href="{{ url_for('register') }}" class="nav-link">注册</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% if error_code %}
+            <div class="card error-card">
+                <h2>{{ error_code }} - {{ error_message }}</h2>
+                <a href="/" class="btn">返回首页</a>
+            </div>
+        {% else %}
+            {% block content %}{% endblock %}
+        {% endif %}
+    </main>
+
+    <footer class="footer">
+        <p>用户管理系统 · 安全加固版 @2025</p>
+    </footer>
+</body>
+</html>

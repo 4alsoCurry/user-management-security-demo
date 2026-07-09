@@ -247,6 +247,32 @@ a:hover {
     margin-top: 24px;
 }
 
+/* ---------- 上传预览 ---------- */
+.upload-preview {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.upload-preview p {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 12px;
+    word-break: break-all;
+}
+
+.upload-preview a {
+    color: #667eea;
+}
+
+.preview-img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 50%;
+    border: 3px solid #667eea;
+    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+    object-fit: cover;
+}
+
 /* ---------- 搜索 ---------- */
 .search-group {
     display: flex;

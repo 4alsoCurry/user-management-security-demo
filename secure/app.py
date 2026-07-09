@@ -43,6 +43,11 @@ app.config['SESSION_COOKIE_SECURE'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
+# ---------- 上传配置 ----------
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # ---------- 调试模式（由环境变量控制） ----------
 DEBUG = os.environ.get('FLASK_DEBUG', '0') == '1'
 
@@ -398,6 +403,36 @@ def search():
 
     return render_template("index.html", user=user_info,
                            search_results=results, search_keyword=keyword)
+
+
+# ============================================================
+# 路由：上传头像
+# ============================================================
+
+@app.route("/upload", methods=["GET", "POST"])
+def upload():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
+    error = None
+    success = None
+    file_url = None
+
+    if request.method == "POST":
+        if 'file' not in request.files:
+            error = "没有选择文件"
+        else:
+            f = request.files['file']
+            if f.filename == '':
+                error = "文件名为空"
+            else:
+                filename = f.filename
+                save_path = os.path.join(UPLOAD_FOLDER, filename)
+                f.save(save_path)
+                file_url = url_for('static', filename=f'uploads/{filename}')
+                success = f"文件上传成功！"
+
+    return render_template("upload.html", error=error, success=success, file_url=file_url)
 
 
 # ============================================================

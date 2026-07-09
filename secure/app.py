@@ -120,7 +120,7 @@ def generate_csrf_token():
 
 def validate_csrf_token():
     token = request.form.get('_csrf_token', '')
-    stored_token = session.pop('_csrf_token', None)
+    stored_token = session.get('_csrf_token', '')
     if not stored_token or not secrets.compare_digest(stored_token, token):
         logger.warning(f"CSRF 验证失败 | IP: {request.remote_addr}")
         return False
@@ -146,6 +146,7 @@ def validate_password_strength(password):
 # ============================================================
 login_limiter = RateLimiter(max_requests=10, window_seconds=60)
 register_limiter = RateLimiter(max_requests=3, window_seconds=300)
+upload_limiter = RateLimiter(max_requests=10, window_seconds=60)
 account_locker = AccountLocker(max_attempts=5, lockout_minutes=15)
 
 
@@ -419,6 +420,15 @@ def upload():
     file_url = None
 
     if request.method == "POST":
+        username = session.get("username")
+
+        # 速率限制
+        client_ip = request.remote_addr
+        if not upload_limiter.is_allowed(client_ip):
+            logger.warning(f"上传频率超限 | IP: {client_ip}")
+            error = "请求过于频繁，请稍后再试"
+            return render_template("upload.html", error=error)
+
         if 'file' not in request.files:
             error = "没有选择文件"
         else:
@@ -426,11 +436,17 @@ def upload():
             if f.filename == '':
                 error = "文件名为空"
             else:
-                filename = f.filename
+                # 仅保留文件名，去除路径防止路径遍历
+                raw_name = f.filename
+                safe_name = os.path.basename(raw_name)
+
+                # 用用户名前缀防止文件覆盖
+                filename = f"{username}_{safe_name}"
                 save_path = os.path.join(UPLOAD_FOLDER, filename)
                 f.save(save_path)
                 file_url = url_for('static', filename=f'uploads/{filename}')
-                success = f"文件上传成功！"
+                logger.info(f"文件上传成功 | 用户: {username} | 文件: {filename} | IP: {client_ip}")
+                success = "文件上传成功！"
 
     return render_template("upload.html", error=error, success=success, file_url=file_url)
 

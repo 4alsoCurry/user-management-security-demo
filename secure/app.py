@@ -147,6 +147,7 @@ def validate_password_strength(password):
 login_limiter = RateLimiter(max_requests=10, window_seconds=60)
 register_limiter = RateLimiter(max_requests=3, window_seconds=300)
 upload_limiter = RateLimiter(max_requests=10, window_seconds=60)
+recharge_limiter = RateLimiter(max_requests=5, window_seconds=60)
 account_locker = AccountLocker(max_attempts=5, lockout_minutes=15)
 
 
@@ -464,32 +465,32 @@ def upload():
 
 @app.route("/profile")
 def profile():
-    user_id = request.args.get("user_id", "")
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
+    username = session.get("username")
     user_data = None
     error = None
 
-    if user_id:
-        try:
-            conn = get_db()
-            c = conn.cursor()
-            c.execute("SELECT id, username, email, phone, balance FROM users WHERE id = ?", (user_id,))
-            row = c.fetchone()
-            conn.close()
-            if row:
-                user_data = {
-                    "id": row[0],
-                    "username": row[1],
-                    "email": row[2] or "",
-                    "phone": row[3] or "",
-                    "balance": row[4] or 0,
-                }
-            else:
-                error = "用户不存在"
-        except Exception as e:
-            error = "查询失败"
-            logger.error(f"个人中心查询异常: {e}")
-    else:
-        error = "请提供 user_id 参数"
+    try:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT id, username, email, phone, balance FROM users WHERE username = ?", (username,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            user_data = {
+                "id": row[0],
+                "username": row[1],
+                "email": row[2] or "",
+                "phone": row[3] or "",
+                "balance": row[4] or 0,
+            }
+        else:
+            error = "用户数据不存在"
+    except Exception as e:
+        error = "查询失败"
+        logger.error(f"个人中心查询异常: {e}")
 
     return render_template("profile.html", user=user_data, error=error)
 
@@ -500,21 +501,40 @@ def profile():
 
 @app.route("/recharge", methods=["POST"])
 def recharge():
-    user_id = request.form.get("user_id", "")
-    amount = request.form.get("amount", "0")
+    if not session.get("username"):
+        return redirect(url_for("login"))
 
-    if user_id:
-        try:
-            conn = get_db()
-            c = conn.cursor()
-            c.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (amount, user_id))
-            conn.commit()
-            conn.close()
-            logger.info(f"充值操作 | user_id: {user_id} | amount: {amount}")
-        except Exception as e:
-            logger.error(f"充值异常: {e}")
+    username = session.get("username")
+    amount_str = request.form.get("amount", "0")
+    error = None
 
-    return redirect(f"/profile?user_id={user_id}")
+    try:
+        amount = float(amount_str)
+    except ValueError:
+        return redirect(url_for("profile"))
+
+    # 金额必须为正数
+    if amount <= 0:
+        logger.warning(f"充值金额无效 | 用户: {username} | 金额: {amount}")
+        return redirect(url_for("profile"))
+
+    # 速率限制
+    client_ip = request.remote_addr
+    if not recharge_limiter.is_allowed(client_ip):
+        logger.warning(f"充值频率超限 | 用户: {username} | IP: {client_ip}")
+        return redirect(url_for("profile"))
+
+    try:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("UPDATE users SET balance = balance + ? WHERE username = ?", (amount, username))
+        conn.commit()
+        conn.close()
+        logger.info(f"充值成功 | 用户: {username} | 金额: {amount} | IP: {client_ip}")
+    except Exception as e:
+        logger.error(f"充值异常 | 用户: {username} | 错误: {e}")
+
+    return redirect(url_for("profile"))
 
 
 # ============================================================

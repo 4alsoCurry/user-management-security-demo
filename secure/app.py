@@ -430,12 +430,19 @@ def upload():
     if request.method == "POST":
         username = session.get("username")
 
+        # CSRF 防护
+        if not validate_csrf_token():
+            error = "安全验证失败，请刷新页面重试"
+            csrf_token = generate_csrf_token()
+            return render_template("upload.html", error=error, csrf_token=csrf_token)
+
         # 速率限制
         client_ip = request.remote_addr
         if not upload_limiter.is_allowed(client_ip):
             logger.warning(f"上传频率超限 | IP: {client_ip}")
             error = "请求过于频繁，请稍后再试"
-            return render_template("upload.html", error=error)
+            csrf_token = generate_csrf_token()
+            return render_template("upload.html", error=error, csrf_token=csrf_token)
 
         if 'file' not in request.files:
             error = "没有选择文件"
@@ -456,7 +463,8 @@ def upload():
                 logger.info(f"文件上传成功 | 用户: {username} | 文件: {filename} | IP: {client_ip}")
                 success = "文件上传成功！"
 
-    return render_template("upload.html", error=error, success=success, file_url=file_url)
+    csrf_token = generate_csrf_token()
+    return render_template("upload.html", error=error, success=success, file_url=file_url, csrf_token=csrf_token)
 
 
 # ============================================================
@@ -492,7 +500,7 @@ def profile():
         error = "查询失败"
         logger.error(f"个人中心查询异常: {e}")
 
-    return render_template("profile.html", user=user_data, error=error)
+    return render_template("profile.html", user=user_data, error=error, csrf_token=generate_csrf_token())
 
 
 # ============================================================
@@ -504,18 +512,28 @@ def recharge():
     if not session.get("username"):
         return redirect(url_for("login"))
 
+    # CSRF 防护
+    if not validate_csrf_token():
+        logger.warning(f"充值CSRF验证失败 | IP: {request.remote_addr}")
+        return redirect(url_for("profile"))
+
     username = session.get("username")
     amount_str = request.form.get("amount", "0")
-    error = None
 
     try:
         amount = float(amount_str)
     except ValueError:
+        logger.warning(f"充值金额格式无效 | 用户: {username} | 输入: {amount_str}")
         return redirect(url_for("profile"))
 
     # 金额必须为正数
     if amount <= 0:
         logger.warning(f"充值金额无效 | 用户: {username} | 金额: {amount}")
+        return redirect(url_for("profile"))
+
+    # 单次充值上限（防止超大型数字导致溢出）
+    if amount > 10000000:
+        logger.warning(f"充值金额超出上限 | 用户: {username} | 金额: {amount}")
         return redirect(url_for("profile"))
 
     # 速率限制

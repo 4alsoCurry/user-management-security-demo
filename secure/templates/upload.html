@@ -19,6 +19,7 @@
         </div>
     {% else %}
         <form method="POST" action="{{ url_for('upload') }}" class="login-form" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
             <div class="form-group">
                 <label for="file">选择头像文件</label>
                 <input type="file" id="file" name="file" required>

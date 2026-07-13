@@ -556,6 +556,56 @@ def recharge():
 
 
 # ============================================================
+# 路由：动态页面加载
+# ============================================================
+
+@app.route("/page")
+def page():
+    name = request.args.get("name", "")
+    page_content = None
+    error = None
+
+    if not name:
+        error = "请提供页面名称"
+    else:
+        # 直接拼接用户输入到路径中，不做任何过滤
+        page_path = os.path.join("pages", name)
+
+        # 如果有 .html 就不加，否则尝试加 .html 后缀
+        if not os.path.exists(page_path):
+            page_path = os.path.join("pages", name + ".html")
+
+        if os.path.exists(page_path):
+            try:
+                with open(page_path, "r", encoding="utf-8") as f:
+                    page_content = f.read()
+            except Exception as e:
+                error = f"读取页面失败"
+                logger.error(f"页面读取异常: {e}")
+        else:
+            error = "页面不存在"
+
+    # 获取当前用户信息
+    username = session.get("username")
+    user_info = None
+    if username:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT username, email, phone FROM users WHERE username = ?", (username,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            user_info = {
+                "username": row[0],
+                "email": row[1] or "",
+                "phone": row[2] or "",
+            }
+
+    return render_template("index.html", user=user_info,
+                           page_content=page_content, page_error=error)
+
+
+# ============================================================
 # 路由：登出
 # ============================================================
 

@@ -2,6 +2,15 @@
 
 {% block content %}
 
+{% if page_content %}
+    <div class="card page-content-card">
+        {{ page_content | safe }}
+        <div class="action-bar">
+            <a href="/" class="btn btn-secondary">返回首页</a>
+        </div>
+    </div>
+{% else %}
+
 {% if user %}
     <div class="card">
         <h2>欢迎回来，{{ user.username }}！</h2>
@@ -15,6 +24,7 @@
         <div class="action-bar">
             <a href="{{ url_for('profile') }}" class="btn">个人中心</a>
             <a href="{{ url_for('upload') }}" class="btn">上传头像</a>
+            <a href="/page?name=help" class="btn btn-secondary">帮助中心</a>
             <a href="{{ url_for('logout') }}" class="btn btn-danger">退出登录</a>
         </div>
     </div>
@@ -69,8 +79,10 @@
         <div class="action-bar">
             <a href="{{ url_for('login') }}" class="btn">前往登录</a>
             <a href="{{ url_for('register') }}" class="btn btn-secondary">注册新账号</a>
+            <a href="/page?name=help" class="btn btn-secondary">帮助中心</a>
         </div>
     </div>
 {% endif %}
 
+{% endif %}
 {% endblock %}

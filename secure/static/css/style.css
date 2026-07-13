@@ -112,6 +112,33 @@ a:hover {
     text-align: center;
 }
 
+.page-content-card {
+    text-align: left;
+}
+
+.page-content-card h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.page-content-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.page-content-card li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.page-content-card li:last-child {
+    border-bottom: none;
+}
+
 .card h2 {
     font-size: 22px;
     font-weight: 700;

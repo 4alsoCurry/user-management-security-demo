@@ -606,6 +606,36 @@ def page():
 
 
 # ============================================================
+# 路由：修改密码
+# ============================================================
+
+@app.route("/change-password", methods=["POST"])
+def change_password():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
+    username = request.form.get("username", "")
+    new_password = request.form.get("new_password", "")
+    confirm_password = request.form.get("confirm_password", "")
+
+    if not username or not new_password:
+        return redirect(url_for("profile"))
+
+    if new_password != confirm_password:
+        return redirect(url_for("profile"))
+
+    hashed_pw = generate_password_hash(new_password)
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_pw, username))
+    conn.commit()
+    conn.close()
+    logger.info(f"密码修改 | 提交用户名: {username} | session用户: {session.get('username')}")
+
+    return redirect(url_for("profile"))
+
+
+# ============================================================
 # 路由：登出
 # ============================================================
 

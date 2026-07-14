@@ -614,11 +614,17 @@ def change_password():
     if not session.get("username"):
         return redirect(url_for("login"))
 
-    username = request.form.get("username", "")
+    # CSRF 验证
+    if not validate_csrf_token():
+        logger.warning(f"修改密码CSRF验证失败 | IP: {request.remote_addr}")
+        return redirect(url_for("profile"))
+
+    # 只能修改自己的密码（从 session 取用户名）
+    session_user = session.get("username")
     new_password = request.form.get("new_password", "")
     confirm_password = request.form.get("confirm_password", "")
 
-    if not username or not new_password:
+    if not new_password:
         return redirect(url_for("profile"))
 
     if new_password != confirm_password:
@@ -627,10 +633,10 @@ def change_password():
     hashed_pw = generate_password_hash(new_password)
     conn = get_db()
     c = conn.cursor()
-    c.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_pw, username))
+    c.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_pw, session_user))
     conn.commit()
     conn.close()
-    logger.info(f"密码修改 | 提交用户名: {username} | session用户: {session.get('username')}")
+    logger.info(f"密码修改成功 | 用户: {session_user} | IP: {request.remote_addr}")
 
     return redirect(url_for("profile"))
 

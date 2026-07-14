@@ -35,7 +35,7 @@
         <div class="recharge-section">
             <h3>修改密码</h3>
             <form method="POST" action="{{ url_for('change_password') }}" class="login-form">
-                <input type="hidden" name="username" value="{{ user.username }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
                 <div class="form-group">
                     <label for="new_password">新密码</label>
                     <input type="password" id="new_password" name="new_password" placeholder="请输入新密码" required>

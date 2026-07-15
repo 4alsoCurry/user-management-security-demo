@@ -3,6 +3,8 @@ import re
 import secrets
 import sqlite3
 import logging
+import urllib.request
+import urllib.error
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -603,6 +605,57 @@ def page():
 
     return render_template("index.html", user=user_info,
                            page_content=page_content, page_error=error)
+
+
+# ============================================================
+# 路由：URL 抓取
+# ============================================================
+
+@app.route("/fetch-url", methods=["POST"])
+def fetch_url():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
+    target_url = request.form.get("url", "")
+    fetch_status = None
+    fetch_content = None
+    fetch_error = None
+
+    if not target_url:
+        fetch_error = "请提供 URL"
+    else:
+        try:
+            req = urllib.request.Request(target_url)
+            with urllib.request.urlopen(req, timeout=10) as response:
+                fetch_status = response.status
+                raw = response.read()
+                content = raw.decode("utf-8", errors="replace")
+                fetch_content = content[:5000]
+        except urllib.error.HTTPError as e:
+            fetch_status = e.code
+            fetch_content = str(e)[:2000]
+            fetch_error = f"HTTP 错误: {e.code}"
+        except Exception as e:
+            fetch_error = f"请求失败: {str(e)[:500]}"
+
+    username = session.get("username")
+    user_info = None
+    if username:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT username, email, phone FROM users WHERE username = ?", (username,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            user_info = {
+                "username": row[0],
+                "email": row[1] or "",
+                "phone": row[2] or "",
+            }
+
+    return render_template("index.html", user=user_info,
+                           fetch_status=fetch_status, fetch_content=fetch_content,
+                           fetch_error=fetch_error, fetch_url=target_url)
 
 
 # ============================================================

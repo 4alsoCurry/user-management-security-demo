@@ -29,6 +29,33 @@
         </div>
     </div>
 
+    <!-- URL 抓取功能 -->
+    <div class="card">
+        <h2>URL 抓取</h2>
+        <form method="POST" action="{{ url_for('fetch_url') }}" class="search-form">
+            <div class="form-group search-group">
+                <input type="text" id="url" name="url" placeholder="输入 URL，如 http://example.com"
+                       value="{{ fetch_url or '' }}" required>
+                <button type="submit" class="btn btn-primary">抓取</button>
+            </div>
+        </form>
+
+        {% if fetch_error %}
+            <div class="alert alert-error">{{ fetch_error }}</div>
+        {% endif %}
+
+        {% if fetch_status %}
+            <div class="fetch-results">
+                <h3>抓取结果</h3>
+                <p><strong>URL：</strong>{{ fetch_url }}</p>
+                <p><strong>状态码：</strong>{{ fetch_status }}</p>
+                <div class="fetch-content">
+                    <pre>{{ fetch_content }}</pre>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
     <!-- 搜索功能 -->
     <div class="card">
         <h2>用户搜索</h2>

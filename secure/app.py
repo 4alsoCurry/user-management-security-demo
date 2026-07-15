@@ -5,6 +5,7 @@ import sqlite3
 import logging
 import urllib.request
 import urllib.error
+import urllib.parse
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -608,8 +609,53 @@ def page():
 
 
 # ============================================================
-# 路由：URL 抓取
+# 路由：URL 抓取（含 SSRF 防护）
 # ============================================================
+
+def is_private_ip(ip_str):
+    """检查 IP 是否为内网地址"""
+    try:
+        import ipaddress
+        addr = ipaddress.ip_address(ip_str)
+        return addr.is_private or addr.is_loopback or addr.is_link_local
+    except ValueError:
+        return False
+
+def validate_url_safe(target_url):
+    """校验 URL 是否安全，防止 SSRF 攻击"""
+    # 只允许 http 和 https 协议
+    parsed = urllib.parse.urlparse(target_url)
+    if parsed.scheme not in ("http", "https"):
+        return False, f"不允许的协议: {parsed.scheme}，仅支持 http/https"
+
+    # 解析主机名
+    hostname = parsed.hostname
+    if not hostname:
+        return False, "无效的 URL"
+
+    # 禁止 localhost
+    if hostname in ("localhost", "0.0.0.0"):
+        return False, "不允许访问本地地址"
+
+    try:
+        import socket
+        # 检查是否直接使用了内网 IP
+        if re.match(r'^127\.|^10\.|^172\.(1[6-9]|2\d|3[01])\.|^192\.168\.|^169\.254\.', hostname):
+            return False, "不允许访问内网地址"
+
+        # DNS 解析，检查目标是否为内网
+        try:
+            ip = socket.gethostbyname(hostname)
+            if is_private_ip(ip):
+                return False, f"目标地址 {ip} 为内网地址，已拦截"
+        except socket.gaierror:
+            return False, "无法解析域名"
+
+    except Exception as e:
+        return False, f"地址校验失败: {str(e)[:200]}"
+
+    return True, ""
+
 
 @app.route("/fetch-url", methods=["POST"])
 def fetch_url():
@@ -624,19 +670,26 @@ def fetch_url():
     if not target_url:
         fetch_error = "请提供 URL"
     else:
-        try:
-            req = urllib.request.Request(target_url)
-            with urllib.request.urlopen(req, timeout=10) as response:
-                fetch_status = response.status
-                raw = response.read()
-                content = raw.decode("utf-8", errors="replace")
-                fetch_content = content[:5000]
-        except urllib.error.HTTPError as e:
-            fetch_status = e.code
-            fetch_content = str(e)[:2000]
-            fetch_error = f"HTTP 错误: {e.code}"
-        except Exception as e:
-            fetch_error = f"请求失败: {str(e)[:500]}"
+        # SSRF 防护检查
+        safe, msg = validate_url_safe(target_url)
+        if not safe:
+            fetch_error = msg
+            logger.warning(f"SSRF 拦截 | 用户: {session.get('username')} | URL: {target_url} | 原因: {msg}")
+        else:
+            try:
+                req = urllib.request.Request(target_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    fetch_status = response.status
+                    raw = response.read()
+                    content = raw.decode("utf-8", errors="replace")
+                    fetch_content = content[:5000]
+                    logger.info(f"URL 抓取成功 | 用户: {session.get('username')} | URL: {target_url} | 状态: {fetch_status}")
+            except urllib.error.HTTPError as e:
+                fetch_status = e.code
+                fetch_content = str(e)[:2000]
+                fetch_error = f"HTTP 错误: {e.code}"
+            except Exception as e:
+                fetch_error = f"请求失败: {str(e)[:500]}"
 
     username = session.get("username")
     user_info = None

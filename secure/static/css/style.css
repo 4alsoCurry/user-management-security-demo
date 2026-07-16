@@ -1,5 +1,5 @@
 /* ============================================
-   用户管理系统 - 安全版样式文件
+   用户管理系统 - 美化版样式文件
    ============================================ */
 
 /* ---------- 全局重置 ---------- */
@@ -13,23 +13,27 @@ html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
                  "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
-    background-color: #f0f2f5;
+    background: linear-gradient(135deg, #e8ecf4 0%, #f5f7fa 50%, #eef1f8 100%);
     min-height: 100vh;
     color: #333;
     line-height: 1.6;
+    background-attachment: fixed;
 }
 
 a {
     color: #667eea;
     text-decoration: none;
+    transition: color 0.2s;
 }
 
 a:hover {
+    color: #5a6fd6;
     text-decoration: underline;
 }
 
@@ -38,14 +42,15 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 32px;
-    height: 64px;
+    padding: 0 36px;
+    height: 68px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.35);
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(10px);
 }
 
 .nav-left {
@@ -54,58 +59,73 @@ a:hover {
 }
 
 .brand {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: #fff;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .brand:hover {
     text-decoration: none;
-    opacity: 0.9;
+    opacity: 1;
+    text-shadow: 0 2px 8px rgba(255,255,255,0.3);
 }
 
 .nav-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .nav-welcome {
     font-size: 14px;
-    opacity: 0.9;
+    opacity: 0.95;
+    margin-right: 4px;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
 }
 
 .nav-link {
     color: #fff;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    padding: 6px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    padding: 7px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
     text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 /* ---------- 容器 ---------- */
 .container {
-    max-width: 520px;
-    margin: 48px auto;
+    max-width: 560px;
+    margin: 40px auto;
     padding: 0 16px;
 }
 
 /* ---------- 卡片 ---------- */
 .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    padding: 36px 32px;
-    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .error-card {
@@ -144,13 +164,17 @@ a:hover {
     font-weight: 700;
     margin-bottom: 20px;
     text-align: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* ---------- 充值 ---------- */
 .recharge-section {
     margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 2px solid #f0f2f7;
 }
 
 .recharge-section h3 {
@@ -159,12 +183,14 @@ a:hover {
     color: #555;
     margin-bottom: 16px;
     text-align: center;
+    letter-spacing: 0.5px;
 }
 
 .balance {
     color: #e67e22;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
+    text-shadow: 0 1px 2px rgba(230,126,34,0.15);
 }
 
 /* ---------- 登录/注册卡片 ---------- */
@@ -176,6 +202,9 @@ a:hover {
 /* ---------- 用户信息列表 ---------- */
 .user-info {
     margin: 24px 0;
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    border-radius: 12px;
+    padding: 4px 16px;
 }
 
 .info-list {
@@ -184,8 +213,8 @@ a:hover {
 }
 
 .info-list li {
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.08);
     font-size: 15px;
     display: flex;
     align-items: center;
@@ -197,7 +226,7 @@ a:hover {
 
 .label {
     font-weight: 600;
-    color: #666;
+    color: #555;
     min-width: 80px;
     flex-shrink: 0;
 }
@@ -213,55 +242,61 @@ a:hover {
     font-weight: 600;
     color: #555;
     margin-bottom: 6px;
+    letter-spacing: 0.3px;
 }
 
 .form-group input {
     width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid #ddd;
-    border-radius: 8px;
+    padding: 11px 16px;
+    border: 2px solid #e8ecf4;
+    border-radius: 10px;
     font-size: 14px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: #fafbfc;
 }
 
 .form-group input:focus {
     border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+    background: #fff;
 }
 
 .form-hint {
     display: block;
-    margin-top: 4px;
+    margin-top: 6px;
     font-size: 12px;
-    color: #999;
+    color: #aaa;
 }
 
 /* ---------- 按钮 ---------- */
 .btn {
     display: inline-block;
-    padding: 10px 28px;
+    padding: 11px 28px;
     font-size: 14px;
     font-weight: 600;
-    background: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     text-align: center;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.3);
 }
 
 .btn:hover {
-    background: #5a6fd6;
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4192 100%);
     text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .btn:active {
     transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .btn-block {
@@ -270,29 +305,32 @@ a:hover {
 }
 
 .btn-danger {
-    background: #e74c3c;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
 }
 
 .btn-danger:hover {
-    background: #c0392b;
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
 }
 
 .btn-secondary {
-    background: #95a5a6;
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    box-shadow: 0 4px 14px rgba(149, 165, 166, 0.3);
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
-    box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7d 100%);
+    box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
 }
 
 /* ---------- 操作栏 ---------- */
 .action-bar {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     justify-content: center;
     margin-top: 24px;
+    flex-wrap: wrap;
 }
 
 /* ---------- 上传预览 ---------- */
@@ -316,9 +354,14 @@ a:hover {
     max-width: 200px;
     max-height: 200px;
     border-radius: 50%;
-    border: 3px solid #667eea;
-    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+    border: 4px solid #667eea;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.35);
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.preview-img:hover {
+    transform: scale(1.05);
 }
 
 /* ---------- 搜索 ---------- */
@@ -330,16 +373,29 @@ a:hover {
 
 .search-group input {
     flex: 1;
+    padding: 11px 16px;
+    border: 2px solid #e8ecf4;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: #fafbfc;
+}
+
+.search-group input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+    background: #fff;
 }
 
 .search-group .btn {
     flex-shrink: 0;
-    padding: 10px 20px;
+    padding: 11px 20px;
 }
 
 .search-results {
     margin-top: 20px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 2px solid #f0f2f7;
     padding-top: 16px;
 }
 
@@ -356,7 +412,7 @@ a:hover {
 /* ---------- URL 抓取 ---------- */
 .fetch-results {
     margin-top: 20px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 2px solid #f0f2f7;
     padding-top: 16px;
 }
 
@@ -375,19 +431,19 @@ a:hover {
 
 .fetch-content {
     margin-top: 10px;
-    background: #f8f9fa;
-    border: 1px solid #e8e8e8;
-    border-radius: 6px;
-    padding: 12px;
+    background: #1e1e2e;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
     max-height: 400px;
     overflow: auto;
 }
 
 .fetch-content pre {
-    font-family: "Courier New", monospace;
+    font-family: "Courier New", "Fira Code", monospace;
     font-size: 12px;
-    line-height: 1.5;
-    color: #333;
+    line-height: 1.6;
+    color: #cdd6f4;
     white-space: pre-wrap;
     word-break: break-all;
 }
@@ -395,25 +451,36 @@ a:hover {
 /* ---------- 表格 ---------- */
 .table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .table th,
 .table td {
-    padding: 10px 12px;
+    padding: 12px 14px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
 }
 
 .table th {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9ff 0%, #eef1ff 100%);
     font-weight: 600;
-    color: #555;
+    color: #444;
+    font-size: 13px;
+    letter-spacing: 0.3px;
 }
 
 .table tbody tr:hover {
     background: #f5f7ff;
+    transition: background 0.2s;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 /* ---------- 提示文字 ---------- */
@@ -426,21 +493,24 @@ a:hover {
 
 /* ---------- 警告框 ---------- */
 .alert {
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 14px 18px;
+    border-radius: 10px;
     margin-bottom: 20px;
     font-size: 14px;
     line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .alert-error {
-    background: #fef2f2;
+    background: linear-gradient(135deg, #fef2f2 0%, #ffe4e4 100%);
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
 
 .alert-success {
-    background: #f0fdf4;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
     color: #15803d;
     border: 1px solid #bbf7d0;
 }
@@ -455,13 +525,14 @@ a:hover {
 
 .form-footer p {
     font-size: 14px;
-    color: #666;
+    color: #888;
 }
 
 /* ---------- 页脚 ---------- */
 .footer {
     text-align: center;
-    padding: 24px;
-    color: #aaa;
+    padding: 28px 24px;
+    color: #bbb;
     font-size: 13px;
+    letter-spacing: 0.5px;
 }

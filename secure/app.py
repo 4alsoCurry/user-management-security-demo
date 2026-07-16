@@ -762,21 +762,58 @@ def ping():
     ip = ""
 
     if request.method == "POST":
-        ip = request.form.get("ip", "").strip()
-        if ip:
-            try:
-                # 使用 f-string 拼接命令，shell=True 执行
-                cmd = f"ping -c 3 {ip}"
-                result = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=30)
-                output = result.decode("utf-8", errors="replace")
-            except subprocess.CalledProcessError as e:
-                output = e.output.decode("utf-8", errors="replace") if e.output else f"命令执行失败，返回码: {e.returncode}"
-            except subprocess.TimeoutExpired:
-                output = "ping 命令执行超时（30秒）"
-            except Exception as e:
-                output = f"执行错误: {str(e)}"
-        else:
+        raw_ip = request.form.get("ip", "").strip()
+        ip = raw_ip
+
+        if not ip:
             output = "请输入 IP 地址"
+        else:
+            # 校验：只允许合法的 IP 地址或域名
+            # IP 地址格式: x.x.x.x (每段0-255)
+            # 域名格式: 字母数字连字符.字母数字
+            is_valid = False
+
+            # 检查是否为 IP 地址
+            ip_pattern = r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$'
+            ip_match = re.match(ip_pattern, ip)
+            if ip_match:
+                parts = [int(ip_match.group(i)) for i in range(1, 5)]
+                if all(0 <= p <= 255 for p in parts):
+                    is_valid = True
+
+            # 检查是否为域名
+            if not is_valid:
+                domain_pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$'
+                if re.match(domain_pattern, ip):
+                    # 确保没有特殊字符或空格
+                    if re.match(r'^[a-zA-Z0-9.\-]+$', ip):
+                        is_valid = True
+
+            if not is_valid:
+                output = "不支持的输入格式，仅允许合法的 IP 地址或域名"
+                logger.warning(f"Ping 非法输入拦截 | 用户: {session.get('username')} | 输入: {ip} | IP: {request.remote_addr}")
+            else:
+                try:
+                    # 使用参数列表 + shell=False，防止命令注入
+                    result = subprocess.run(
+                        ["ping", "-c", "3", ip],
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        output = result.stdout
+                        logger.info(f"Ping 成功 | 用户: {session.get('username')} | 目标: {ip} | IP: {request.remote_addr}")
+                    else:
+                        output = result.stderr if result.stderr else f"ping 失败，返回码: {result.returncode}"
+                        logger.warning(f"Ping 失败 | 用户: {session.get('username')} | 目标: {ip} | 返回码: {result.returncode}")
+                except subprocess.TimeoutExpired:
+                    output = "ping 命令执行超时（30秒）"
+                except FileNotFoundError:
+                    output = "系统未找到 ping 命令"
+                except Exception as e:
+                    output = f"执行错误: {str(e)}"
+                    logger.error(f"Ping 异常 | 用户: {session.get('username')} | 错误: {e}")
 
     return render_template("ping.html", output=output, ip=ip)
 
@@ -817,4 +854,4 @@ def too_many_requests(e):
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=DEBUG, host="0.0.0.0", port=7777)
+    app.run(debug=DEBUG, host="0.0.0.0", port=5000)

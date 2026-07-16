@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card login-card">
+    <h2>Ping 网络诊断</h2>
+
+    <form method="POST" action="{{ url_for('ping') }}" class="login-form">
+        <div class="form-group search-group">
+            <input type="text" id="ip" name="ip" placeholder="输入 IP 地址或域名"
+                   value="{{ ip or '' }}" required>
+            <button type="submit" class="btn btn-primary">Ping</button>
+        </div>
+    </form>
+
+    {% if output %}
+        <div class="terminal">
+            <div class="terminal-header">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+                <span class="terminal-title">ping {{ ip }}</span>
+            </div>
+            <pre class="terminal-body">{{ output }}</pre>
+        </div>
+    {% endif %}
+
+    <div class="form-footer">
+        <p><a href="{{ url_for('index') }}">返回首页</a></p>
+    </div>
+</div>
+{% endblock %}

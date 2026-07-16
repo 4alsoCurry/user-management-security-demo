@@ -3,6 +3,8 @@ import re
 import secrets
 import sqlite3
 import logging
+import subprocess
+import platform
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -748,6 +750,38 @@ def change_password():
 
 
 # ============================================================
+# 路由：Ping 网络诊断
+# ============================================================
+
+@app.route("/ping", methods=["GET", "POST"])
+def ping():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
+    output = None
+    ip = ""
+
+    if request.method == "POST":
+        ip = request.form.get("ip", "").strip()
+        if ip:
+            try:
+                # 使用 f-string 拼接命令，shell=True 执行
+                cmd = f"ping -c 3 {ip}"
+                result = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=30)
+                output = result.decode("utf-8", errors="replace")
+            except subprocess.CalledProcessError as e:
+                output = e.output.decode("utf-8", errors="replace") if e.output else f"命令执行失败，返回码: {e.returncode}"
+            except subprocess.TimeoutExpired:
+                output = "ping 命令执行超时（30秒）"
+            except Exception as e:
+                output = f"执行错误: {str(e)}"
+        else:
+            output = "请输入 IP 地址"
+
+    return render_template("ping.html", output=output, ip=ip)
+
+
+# ============================================================
 # 路由：登出
 # ============================================================
 
@@ -783,4 +817,4 @@ def too_many_requests(e):
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=DEBUG, host="0.0.0.0", port=5000)
+    app.run(debug=DEBUG, host="0.0.0.0", port=7777)

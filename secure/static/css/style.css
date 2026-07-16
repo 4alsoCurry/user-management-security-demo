@@ -409,6 +409,54 @@ a:hover {
     padding: 20px 0;
 }
 
+/* ---------- 终端（Ping） ---------- */
+.terminal {
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.terminal-header {
+    background: #2d2d3a;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #28c840; }
+
+.terminal-title {
+    color: #aaa;
+    font-size: 12px;
+    margin-left: 8px;
+    font-family: "Courier New", monospace;
+}
+
+.terminal-body {
+    background: #1a1a2e;
+    color: #00ff88;
+    padding: 20px;
+    font-family: "Courier New", "Fira Code", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+    max-height: 400px;
+    overflow: auto;
+}
+
 /* ---------- URL 抓取 ---------- */
 .fetch-results {
     margin-top: 20px;

@@ -5,6 +5,7 @@ import sqlite3
 import logging
 import subprocess
 import platform
+import json
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -816,6 +817,78 @@ def ping():
                     logger.error(f"Ping 异常 | 用户: {session.get('username')} | 错误: {e}")
 
     return render_template("ping.html", output=output, ip=ip)
+
+
+# ============================================================
+# 路由：XML 数据导入（含 XXE 漏洞）
+# ============================================================
+
+@app.route("/xml-import", methods=["GET", "POST"])
+def xml_import():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
+    result = None
+    raw_xml = ""
+
+    if request.method == "POST":
+        raw_xml = request.form.get("xml_data", "")
+
+        if not raw_xml.strip():
+            result = json.dumps({"error": "XML 数据不能为空"}, ensure_ascii=False, indent=2)
+        else:
+            try:
+                # 手动处理 XXE：查找 <!ENTITY 定义并读取 SYSTEM 文件
+                processed_xml = raw_xml
+
+                # 提取所有 <!ENTITY name SYSTEM "path"> 定义
+                entity_pattern = re.compile(r'<!ENTITY\s+(\S+)\s+SYSTEM\s+"([^"]+)"')
+                entities = entity_pattern.findall(raw_xml)
+
+                file_contents = {}
+                for name, path in entities:
+                    try:
+                        with open(path, "r", encoding="utf-8", errors="replace") as f:
+                            file_contents[name] = f.read()
+                    except Exception as e:
+                        file_contents[name] = f"[读取失败: {path} - {str(e)}]"
+
+                # 替换实体引用 &name; 为文件内容
+                for name, content in file_contents.items():
+                    processed_xml = processed_xml.replace(f"&{name};", content)
+
+                # 解析替换后的 XML，提取 user 节点
+                import xml.etree.ElementTree as ET
+                root = ET.fromstring(processed_xml)
+
+                users = []
+                for user_elem in root.findall(".//user"):
+                    name_elem = user_elem.find("name")
+                    email_elem = user_elem.find("email")
+                    user_data = {}
+                    if name_elem is not None:
+                        user_data["name"] = name_elem.text
+                    if email_elem is not None:
+                        user_data["email"] = email_elem.text
+                    if user_data:
+                        users.append(user_data)
+
+                # 记录读取的文件
+                if file_contents:
+                    for name, content in file_contents.items():
+                        logger.info(f"XXE 文件读取 | 用户: {session.get('username')} | 实体: {name} | 内容长度: {len(content)}")
+
+                if users:
+                    result = json.dumps({"success": True, "users": users}, ensure_ascii=False, indent=2)
+                else:
+                    result = json.dumps({"success": True, "message": "未找到 user 节点", "raw": processed_xml[:500]}, ensure_ascii=False, indent=2)
+
+            except ET.ParseError as e:
+                result = json.dumps({"error": f"XML 解析失败: {str(e)}"}, ensure_ascii=False, indent=2)
+            except Exception as e:
+                result = json.dumps({"error": f"处理失败: {str(e)}"}, ensure_ascii=False, indent=2)
+
+    return render_template("xml_import.html", result=result, raw_xml=raw_xml)
 
 
 # ============================================================

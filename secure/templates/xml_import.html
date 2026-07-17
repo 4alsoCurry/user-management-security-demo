@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card login-card" style="max-width: 600px;">
+    <h2>XML 数据导入</h2>
+
+    <form method="POST" action="{{ url_for('xml_import') }}" class="login-form">
+        <div class="form-group">
+            <label for="xml_data">XML 数据</label>
+            <textarea id="xml_data" name="xml_data" rows="12" class="xml-textarea" placeholder="在此输入 XML 数据...">{{ raw_xml or '' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">导入</button>
+    </form>
+
+    {% if result %}
+        <div class="xml-result">
+            <h3>解析结果</h3>
+            <pre class="xml-output">{{ result }}</pre>
+        </div>
+    {% endif %}
+
+    <div class="form-footer">
+        <p><a href="{{ url_for('index') }}">返回首页</a></p>
+    </div>
+</div>
+{% endblock %}

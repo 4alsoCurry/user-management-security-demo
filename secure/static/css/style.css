@@ -584,3 +584,52 @@ a:hover {
     font-size: 13px;
     letter-spacing: 0.5px;
 }
+
+/* ---------- XML 导入 ---------- */
+.xml-textarea {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #e8ecf4;
+    border-radius: 10px;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: #fafbfc;
+    resize: vertical;
+    min-height: 200px;
+}
+
+.xml-textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+    background: #fff;
+}
+
+.xml-result {
+    margin-top: 20px;
+    border-top: 2px solid #f0f2f7;
+    padding-top: 16px;
+}
+
+.xml-result h3 {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.xml-output {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 16px;
+    border-radius: 10px;
+    font-family: "Courier New", "Fira Code", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow: auto;
+    margin: 0;
+}
